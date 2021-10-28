@@ -1,4 +1,4 @@
-module github.com/nitro/lazypdf/v2
+module github.com/aquarius6666/lazypdf
 
 go 1.16
 
