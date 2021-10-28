@@ -234,22 +234,22 @@ save_to_png_output *save_to_png(save_to_png_input *input) {
 		page = pdf_load_page(ctx, doc, input->page);
 
 		float scale_factor = 1.5;
+		float max_size = 4000;
 		fz_rect bounds = pdf_bound_page(ctx, page);
-		if (input->width != 0) {
-			scale_factor = input->width / bounds.x1;
-		} else if (input->scale != 0) {
-			scale_factor = input->scale;
-		} else if ((bounds.x1 - bounds.x0) > (bounds.y1 - bounds.y0)) {
+		if ((bounds.x1 - bounds.x0 >= max_size) || (bounds.y1 - bounds.y0 >= max_size)) {
+			// 
+		} else {
 			switch (get_rotation(ctx, page)) {
 				case 0:
+					scale_factor = max_size / (bounds.x1 - bounds.x0);
+					break;
 				case 180:
-					scale_factor = 1;
+					scale_factor = max_size / (bounds.y1 - bounds.y0);
 					break;
 				default:
-					scale_factor = 1.5;
+					scale_factor = 5;
 			}
 		}
-
 		fz_matrix ctm = fz_scale(scale_factor, scale_factor);
 		bounds = fz_transform_rect(bounds, ctm);
 		fz_irect bbox = fz_round_rect(bounds);

@@ -22,7 +22,7 @@ func init() {
 }
 
 // SaveToPNG is used to convert a page from a PDF file to PNG.
-func SaveToPNG(ctx context.Context, page, width uint16, scale float32, rawPayload io.Reader, output io.Writer) (err error) {
+func SaveToPNG(ctx context.Context, page uint16, rawPayload []byte, output io.Writer) (err error) {
 	span, _ := ddTracer.StartSpanFromContext(ctx, "lazypdf.SaveToPNG")
 	defer func() { span.Finish(ddTracer.WithError(err)) }()
 
@@ -33,19 +33,15 @@ func SaveToPNG(ctx context.Context, page, width uint16, scale float32, rawPayloa
 		return errors.New("output can't be nil")
 	}
 
-	payload, err := io.ReadAll(rawPayload)
-	if err != nil {
-		return fmt.Errorf("fail to read the payload: %w", err)
-	}
-	payloadPointer := C.CBytes(payload)
+	payloadPointer := C.CBytes(rawPayload)
 	defer C.free(payloadPointer)
 
 	input := C.save_to_png_input{
 		page:           C.int(page),
-		width:          C.int(width),
-		scale:          C.float(scale),
+		width:          C.int(0),
+		scale:          C.float(0),
 		payload:        (*C.uchar)(payloadPointer),
-		payload_length: C.size_t(len(payload)),
+		payload_length: C.size_t(len(rawPayload)),
 	}
 	result := C.save_to_png(&input) // nolint: gocritic
 	defer C.drop_save_to_png_output(result)
@@ -60,7 +56,7 @@ func SaveToPNG(ctx context.Context, page, width uint16, scale float32, rawPayloa
 }
 
 // PageCount is used to return the page count of the document.
-func PageCount(ctx context.Context, rawPayload io.Reader) (_ int, err error) {
+func PageCount(ctx context.Context, rawPayload []byte) (_ int, err error) {
 	span, _ := ddTracer.StartSpanFromContext(ctx, "lazypdf.PageCount")
 	defer func() { span.Finish(ddTracer.WithError(err)) }()
 
@@ -68,16 +64,12 @@ func PageCount(ctx context.Context, rawPayload io.Reader) (_ int, err error) {
 		return 0, errors.New("payload can't be nil")
 	}
 
-	payload, err := io.ReadAll(rawPayload)
-	if err != nil {
-		return 0, fmt.Errorf("fail to read the payload: %w", err)
-	}
-	payloadPointer := C.CBytes(payload)
+	payloadPointer := C.CBytes(rawPayload)
 	defer C.free(payloadPointer)
 
 	input := C.page_count_input{
 		payload:        (*C.uchar)(payloadPointer),
-		payload_length: C.size_t(len(payload)),
+		payload_length: C.size_t(len(rawPayload)),
 	}
 	output := C.page_count(&input) // nolint: gocritic
 	defer C.drop_page_count_output(output)
