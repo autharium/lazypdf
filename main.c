@@ -234,7 +234,7 @@ save_to_png_output *save_to_png(save_to_png_input *input) {
 		page = pdf_load_page(ctx, doc, input->page);
 
 		float scale_factor = 1.5;
-		float max_size = 2000;
+		float max_size = 1500;
 		fz_rect bounds = pdf_bound_page(ctx, page);
 		if ((bounds.x1 - bounds.x0 >= max_size) || (bounds.y1 - bounds.y0 >= max_size)) {
 			// 
