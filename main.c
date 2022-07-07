@@ -233,6 +233,7 @@ save_to_png_output *save_to_png(save_to_png_input *input) {
 		doc = pdf_open_document_with_stream(ctx, stream);
 		page = pdf_load_page(ctx, doc, input->page);
 
+		// TODO: edit page_size
 		float scale_factor = 1.5;
 		float max_size = 1500;
 		fz_rect bounds = pdf_bound_page(ctx, page);
