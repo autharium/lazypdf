@@ -1,4 +1,4 @@
-module github.com/aqaurius6666/lazypdf
+module github.com/autharium/lazypdf
 
 go 1.16
 
